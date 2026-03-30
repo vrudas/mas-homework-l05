@@ -4,7 +4,7 @@ from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
     api_key: SecretStr
-    model_name: str = "gpt-5.2"
+    model_name: str = "gpt-4o-mini"
 
     # Web search
     max_search_results: int = 5
@@ -21,9 +21,10 @@ class Settings(BaseSettings):
 
     # Agent
     output_dir: str = "output"
-    max_iterations: int = 10
+    max_iterations: int = 5
 
     model_config = {"env_file": ".env"}
 
+settings = Settings()
 
 SYSTEM_PROMPT = """"""
