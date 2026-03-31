@@ -9,6 +9,7 @@ Usage: python ingest.py
 
 from langchain_community.document_loaders import PyPDFLoader, DirectoryLoader, TextLoader
 from langchain_core.documents import Document
+from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 from config import settings
 
@@ -50,6 +51,8 @@ def ingest():
 
     documents = load_documents()
 
+    chunks = split_to_chunks(documents)
+
     pass
 
 
@@ -77,6 +80,37 @@ def print_loaded_docs_details(langchain_docs: list[Document]):
         print(f"  Page: {doc.metadata['page']} | Length: {len(doc.page_content)} chars")
 
     print()
+
+
+def split_to_chunks(documents: list[Document]) -> list[Document]:
+    recursive_splitter = RecursiveCharacterTextSplitter(
+        chunk_size=200,
+        chunk_overlap=30,
+        separators=["\n\n", "\n", ". ", " ", ""]
+    )
+
+    texts = [doc.page_content for doc in documents]
+    metadatas = [{"title": doc.metadata.get("title", "")} for doc in documents]
+
+    recursive_chunks = recursive_splitter.create_documents(texts=texts, metadatas=metadatas)
+    print(f"📊 Recursive splitter: {len(recursive_chunks)} chunks\n")
+
+    print_chunks_details(recursive_chunks)
+
+    return recursive_chunks
+
+
+def print_chunks_details(recursive_chunks: list[Document]):
+    if settings.skip_details:
+        return
+
+    for i, chunk in enumerate(recursive_chunks):
+        print(f"--- Chunk {i} ({len(chunk.page_content)} chars) ---")
+        print(chunk.page_content.strip())
+        print()
+
+    print()
+
 
 if __name__ == "__main__":
     ingest()
