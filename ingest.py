@@ -64,7 +64,7 @@ def ingest():
 
         chunks = split_to_chunks(documents)
 
-        embeddings = generate_emebeddings(chunks)
+        embeddings = generate_embeddings(chunks)
 
         build_index(chunks, embeddings)
     else:
@@ -129,7 +129,7 @@ def print_chunks_details(recursive_chunks: list[Document]):
     print()
 
 
-def generate_emebeddings(chunks: list[Document]) -> list[list[float]]:
+def generate_embeddings(chunks: list[Document]) -> list[list[float]]:
     print("⚡ Generating embeddings using OpenAI API")
 
     texts = [chunk.page_content for chunk in chunks]
