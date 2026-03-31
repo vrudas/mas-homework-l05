@@ -6,7 +6,6 @@ generates embeddings, and saves the index to disk.
 
 Usage: python ingest.py
 """
-import os
 
 from langchain_community.document_loaders import PyPDFLoader, DirectoryLoader, TextLoader
 from langchain_community.vectorstores import FAISS
@@ -15,6 +14,7 @@ from langchain_openai import OpenAIEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 from config import settings
+from utils import index_exists
 
 directory = f"./{settings.data_dir}/"
 index_directory = f"./{settings.index_dir}/"
@@ -69,13 +69,6 @@ def ingest():
         build_index(chunks, embeddings)
     else:
         print(f"📂 Index already exists in '{index_directory}'. Skipping ingestion process")
-
-
-def index_exists(path: str) -> bool:
-    return (
-            os.path.exists(os.path.join(path, "index.faiss")) and
-            os.path.exists(os.path.join(path, "index.pkl"))
-    )
 
 
 def load_documents() -> list[Document]:
