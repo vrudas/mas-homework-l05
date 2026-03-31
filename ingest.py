@@ -9,11 +9,13 @@ Usage: python ingest.py
 
 from langchain_community.document_loaders import PyPDFLoader, DirectoryLoader, TextLoader
 from langchain_core.documents import Document
+from langchain_openai import OpenAIEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 from config import settings
 
 directory = f"./{settings.data_dir}/"
+index_directory = f"./{settings.index_dir}/"
 
 loaders = {
     "PDF": DirectoryLoader(
@@ -39,6 +41,12 @@ loaders = {
     ),
 }
 
+embedding_model_name = settings.embedding_model
+embedding_model = OpenAIEmbeddings(
+    api_key=settings.api_key,
+    model=embedding_model_name
+)
+
 
 def ingest():
     # TODO:
@@ -52,6 +60,15 @@ def ingest():
     documents = load_documents()
 
     chunks = split_to_chunks(documents)
+
+    embeddings = generate_emebeddings(chunks)
+
+    #
+    # vectorstore = FAISS.from_documents(chunks, embeddings)
+    # print(f"🗃️  FAISS index built!")
+    #
+    # vectorstore.save_local(index_directory)
+    # print(f"💾 Index saved to {index_directory}")
 
     pass
 
@@ -112,6 +129,27 @@ def print_chunks_details(recursive_chunks: list[Document]):
         print()
 
     print()
+
+
+def generate_emebeddings(chunks: list[Document]) -> list[list[float]]:
+    print("⚡ Generating embeddings using OpenAI API")
+
+    texts = [chunk.page_content for chunk in chunks]
+    vectors = embedding_model.embed_documents(texts)
+
+    print(f"✅ Generated {len(vectors)} embeddings for {len(chunks)} chunks\n")
+
+    print_vectors(vectors)
+
+    return vectors
+
+
+def print_vectors(vectors: list[list[float]]):
+    if settings.skip_details:
+        return
+
+    for vector in vectors:
+        print(f"📐Vector (length {len(vector)}): {vector[:5]}...{vector[-5:]}")
 
 
 if __name__ == "__main__":
