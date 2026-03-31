@@ -83,9 +83,11 @@ def print_loaded_docs_details(langchain_docs: list[Document]):
 
 
 def split_to_chunks(documents: list[Document]) -> list[Document]:
+    print("🔪 Splitting documents into chunks using RecursiveCharacterTextSplitter")
+
     recursive_splitter = RecursiveCharacterTextSplitter(
-        chunk_size=200,
-        chunk_overlap=30,
+        chunk_size=settings.chunk_size,
+        chunk_overlap=settings.chunk_overlap,
         separators=["\n\n", "\n", ". ", " ", ""]
     )
 
