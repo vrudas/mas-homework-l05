@@ -6,8 +6,10 @@ generates embeddings, and saves the index to disk.
 
 Usage: python ingest.py
 """
+import os
 
 from langchain_community.document_loaders import PyPDFLoader, DirectoryLoader, TextLoader
+from langchain_community.vectorstores import FAISS
 from langchain_core.documents import Document
 from langchain_openai import OpenAIEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
@@ -57,20 +59,23 @@ def ingest():
     # 5. Save index to config.index_dir
     # 6. Save chunks for BM25 retriever (pickle or JSON)
 
-    documents = load_documents()
+    if not index_exists(index_directory):
+        documents = load_documents()
 
-    chunks = split_to_chunks(documents)
+        chunks = split_to_chunks(documents)
 
-    embeddings = generate_emebeddings(chunks)
+        embeddings = generate_emebeddings(chunks)
 
-    #
-    # vectorstore = FAISS.from_documents(chunks, embeddings)
-    # print(f"🗃️  FAISS index built!")
-    #
-    # vectorstore.save_local(index_directory)
-    # print(f"💾 Index saved to {index_directory}")
+        build_index(chunks, embeddings)
+    else:
+        print(f"📂 Index already exists in '{index_directory}'. Skipping ingestion process")
 
-    pass
+
+def index_exists(path: str) -> bool:
+    return (
+            os.path.exists(os.path.join(path, "index.faiss")) and
+            os.path.exists(os.path.join(path, "index.pkl"))
+    )
 
 
 def load_documents() -> list[Document]:
@@ -150,6 +155,23 @@ def print_vectors(vectors: list[list[float]]):
 
     for vector in vectors:
         print(f"📐Vector (length {len(vector)}): {vector[:5]}...{vector[-5:]}")
+
+
+def build_index(chunks: list[Document], embeddings: list[list[float]]):
+    text_embedding_pairs = list(zip(
+        [doc.page_content for doc in chunks],  # texts
+        embeddings  # your precomputed embeddings
+    ))
+
+    vectorstore = FAISS.from_embeddings(
+        text_embeddings=text_embedding_pairs,
+        embedding=embedding_model,
+        metadatas=[doc.metadata for doc in chunks]
+    )
+    print(f"🗃️  FAISS index built!")
+
+    vectorstore.save_local(index_directory)
+    print(f"💾 Index saved to {index_directory}")
 
 
 if __name__ == "__main__":
