@@ -6,6 +6,8 @@ class Settings(BaseSettings):
     api_key: SecretStr
     model_name: str = "gpt-4o-mini"
 
+    skip_details: bool = True
+
     # Web search
     max_search_results: int = 5
     max_url_content_length: int = 5000
