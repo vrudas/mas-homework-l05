@@ -7,10 +7,36 @@ generates embeddings, and saves the index to disk.
 Usage: python ingest.py
 """
 
-from langchain_community.document_loaders import PyPDFLoader, DirectoryLoader
+from langchain_community.document_loaders import PyPDFLoader, DirectoryLoader, TextLoader
 from langchain_core.documents import Document
 
 from config import settings
+
+directory = f"./{settings.data_dir}/"
+
+loaders = {
+    "PDF": DirectoryLoader(
+        directory,
+        glob="**/*.pdf",
+        loader_cls=PyPDFLoader,
+        show_progress=not settings.skip_details,
+        silent_errors=not settings.skip_details,
+    ),
+    "TXT": DirectoryLoader(
+        directory,
+        glob="**/*.txt",
+        loader_cls=TextLoader,
+        show_progress=not settings.skip_details,
+        silent_errors=not settings.skip_details,
+    ),
+    "MD": DirectoryLoader(
+        directory,
+        glob="**/*.md",
+        loader_cls=TextLoader,
+        show_progress=not settings.skip_details,
+        silent_errors=not settings.skip_details,
+    ),
+}
 
 
 def ingest():
@@ -22,22 +48,25 @@ def ingest():
     # 5. Save index to config.index_dir
     # 6. Save chunks for BM25 retriever (pickle or JSON)
 
-    path_to_data = f"./{settings.data_dir}/"
-    loader = DirectoryLoader(
-        path=path_to_data,
-        glob="**/*.pdf",
-        show_progress=True,
-        silent_errors=True,
-        loader_cls=PyPDFLoader
-    )
-
-    print(F"📂 Loading documents from '{path_to_data}' directory using LangChain DirectoryLoader...")
-    langchain_docs = loader.load()
-
-    print(f"📄 Loaded {len(langchain_docs)} pages via LangChain PyPDFLoader")
-    print_loaded_docs_details(langchain_docs)
+    documents = load_documents()
 
     pass
+
+
+def load_documents() -> list[Document]:
+    documents: list[Document] = []
+
+    for file_type, loader in loaders.items():
+        print(F"📂 Loading {file_type} documents from '{directory}' directory using {loader.loader_cls.__name__}")
+
+        loaded_docs = loader.load()
+        documents.extend(loaded_docs)
+
+        print(f"📄 Loaded {len(loaded_docs)} pages from {file_type} files")
+        print()
+        print_loaded_docs_details(loaded_docs)
+
+    return documents
 
 
 def print_loaded_docs_details(langchain_docs: list[Document]):
@@ -47,6 +76,7 @@ def print_loaded_docs_details(langchain_docs: list[Document]):
     for doc in langchain_docs:
         print(f"  Page: {doc.metadata['page']} | Length: {len(doc.page_content)} chars")
 
+    print()
 
 if __name__ == "__main__":
     ingest()
