@@ -5,6 +5,7 @@ from ddgs import DDGS
 from langchain_core.tools import tool
 
 from config import settings
+from retriever import get_retriever
 
 
 @tool
@@ -59,6 +60,14 @@ def write_report(filename: str, content: str) -> str:
     return f"Report written to {path}"
 
 
+@tool
 def knowledge_search(query: str) -> str:
-    """Search the local knowledge base using hybrid retrieval + reranking."""
-    pass
+    """Search the local knowledge base using hybrid retrieval + reranking.
+    Args: query: search string"""
+    try:
+        retriever = get_retriever()
+        response = retriever.invoke(query)
+        return str(response)
+    except Exception:
+        print(f"Error during finding content for: {query}")
+        return f"Error during finding content for: {query}"
