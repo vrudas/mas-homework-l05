@@ -4,7 +4,6 @@ Hybrid retrieval module.
 Combines semantic search (vector DB) + BM25 (lexical) + cross-encoder reranking.
 """
 import pickle
-import sys
 
 from langchain_classic.retrievers import EnsembleRetriever, ContextualCompressionRetriever
 from langchain_classic.retrievers.document_compressors import CrossEncoderReranker
