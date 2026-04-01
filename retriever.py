@@ -24,7 +24,6 @@ embedding_model = OpenAIEmbeddings(
 
 
 def get_retriever() -> ContextualCompressionRetriever | None:
-    # TODO:
     # 1. Load vector store from disk (config.index_dir)
     # 2. Create semantic retriever from vector store
     # 3. Load chunks and create BM25 retriever

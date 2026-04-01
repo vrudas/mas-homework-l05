@@ -51,7 +51,6 @@ embedding_model = OpenAIEmbeddings(
 
 
 def ingest():
-    # TODO:
     # 1. Load documents from config.data_dir (PDF, TXT, MD)
     # 2. Split into chunks using TextSplitter
     # 3. Generate embeddings
@@ -153,7 +152,7 @@ def print_vectors(vectors: list[list[float]]):
 def build_index(chunks: list[Document], embeddings: list[list[float]]):
     text_embedding_pairs = list(zip(
         [doc.page_content for doc in chunks],  # texts
-        embeddings  # your precomputed embeddings
+        embeddings  # precomputed embeddings
     ))
 
     vectorstore = FAISS.from_embeddings(
