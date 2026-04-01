@@ -133,7 +133,7 @@ def generate_embeddings(chunks: list[Document]) -> list[list[float]]:
     print("⚡ Generating embeddings using OpenAI API")
 
     texts = [chunk.page_content for chunk in chunks]
-    vectors = embedding_model.embed_documents(texts)
+    vectors = embedding_model.embed_documents(texts, chunk_size=settings.chunk_size)
 
     print(f"✅ Generated {len(vectors)} embeddings for {len(chunks)} chunks\n")
 
