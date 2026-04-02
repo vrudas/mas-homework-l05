@@ -1,4 +1,5 @@
 import uuid
+from typing import Any
 
 from agent import agent
 
@@ -53,15 +54,20 @@ def print_tool_results_output(chunk):
             lines = content.strip().splitlines() if isinstance(content, str) else []
 
             if lines and len(lines) > 1:
-                print(f"📎 Result: {lines[0]}")
-                for line in lines[1:]:
+                print(f"📎 Result: {truncate_content(lines[0])}")
+                for line in lines[1:4]:
                     if line.strip():
-                        print(f"   - {line.strip()}")
+                        print(f"   - {truncate_content(line.strip())}")
+                print(f"   ...")
             else:
                 # Truncate long single-line results
-                preview = content[:200] + "..." if len(content) > 200 else content
+                preview = truncate_content(content)
                 print(f"📎 Result: {preview}")
             print()
+
+
+def truncate_content(content: str | Any) -> str | Any:
+    return content[:200] + "..." if len(content) > 200 else content
 
 
 if __name__ == "__main__":
